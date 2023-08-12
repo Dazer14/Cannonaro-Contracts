@@ -195,7 +195,9 @@ contract CannonaroFactory {
         uint256 supply,
         uint256 presaleRaiseGoalAmount,
         uint256 vestingDuration,
-        uint256 supplyPercentForPresaleBasisPoints
+        uint256 supplyPercentForPresaleBasisPoints,
+        bool _usingWithdrawCallFee,
+        uint16 _withdrawCallFeeBasisPoints
     ) external onlyEOA returns (uint256 tokenID) {
         address tokenAddress = address(
             new CantoPresale(
@@ -205,7 +207,9 @@ contract CannonaroFactory {
                 presaleRaiseGoalAmount,
                 vestingDuration,
                 supplyPercentForPresaleBasisPoints,
-                address(this)
+                address(this),
+                _usingWithdrawCallFee,
+                _withdrawCallFeeBasisPoints
             )
         );
 

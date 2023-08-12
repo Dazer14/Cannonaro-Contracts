@@ -15,7 +15,9 @@ contract CantoPresale is CannonaroPresaleERC20 {
         uint256 _presaleRaiseGoalAmount,
         uint256 _vestingDuration,
         uint256 _supplyPercentForPresaleBasisPoints,
-        address _Factory
+        address _Factory,
+        bool _usingWithdrawCallFee,
+        uint16 _withdrawCallFeeBasisPoints
     )
         CannonaroPresaleERC20(
             _name,
@@ -24,11 +26,14 @@ contract CantoPresale is CannonaroPresaleERC20 {
             _presaleRaiseGoalAmount,
             _vestingDuration,
             _supplyPercentForPresaleBasisPoints,
-            _Factory
+            _Factory,
+            _usingWithdrawCallFee,
+            _withdrawCallFeeBasisPoints
         )
     {}
 
     function joinPresale(uint256 amount) external payable override {
+        amount;
         uint256 contributionAmount = msg.value;
         uint256 excessContribution = _joinPresale(contributionAmount);
         if (excessContribution > 0) {

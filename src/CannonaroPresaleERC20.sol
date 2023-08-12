@@ -11,6 +11,7 @@ import "openzeppelin/token/ERC20/extensions/draft-ERC20Permit.sol";
 import "openzeppelin/security/ReentrancyGuard.sol";
 // import "@openzeppelin/contracts/utils/Address.sol";
 import "openzeppelin/utils/Address.sol";
+import "lib/CSR-Rewards-ERC20/src/contracts/CsrRewardsERC20.sol";
 
 import "./ICannonaroFactory.sol";
 
@@ -19,7 +20,7 @@ import "./ICannonaroFactory.sol";
  * @notice ERC20 extended with linear vesting presale support
  * @dev Inherited by Presale pair type
  */
-abstract contract CannonaroPresaleERC20 is ERC20, ReentrancyGuard, ERC20Permit {
+abstract contract CannonaroPresaleERC20 is ERC20, ReentrancyGuard, ERC20Permit, CsrRewardsERC20 {
     struct PresaleConstants {
         uint256 presaleRaiseGoalAmount;
         uint256 vestingDuration;
@@ -63,8 +64,10 @@ abstract contract CannonaroPresaleERC20 is ERC20, ReentrancyGuard, ERC20Permit {
         uint256 _presaleRaiseGoalAmount,
         uint256 _vestingDuration,
         uint256 _supplyPercentForPresaleBasisPoints,
-        address _Factory
-    ) ERC20(_name, _symbol) ERC20Permit(_name) {
+        address _Factory,
+        bool _usingWithdrawCallFee,
+        uint16 _withdrawCallFeeBasisPoints
+    ) ERC20(_name, _symbol) ERC20Permit(_name) CsrRewardsERC20(_usingWithdrawCallFee, _withdrawCallFeeBasisPoints) {
         require(
             _supplyPercentForPresaleBasisPoints <= 9900 && _supplyPercentForPresaleBasisPoints >= 100,
             "Presale supply must be between 1% and 99%"
@@ -86,6 +89,10 @@ abstract contract CannonaroPresaleERC20 is ERC20, ReentrancyGuard, ERC20Permit {
             _supply - tokenAmountReservedForPresale,
             block.timestamp
         );
+    }
+
+    function _afterTokenTransfer(address from, address to, uint256 amount) internal override(ERC20, CsrRewardsERC20) {
+        super._afterTokenTransfer(from, to, amount);
     }
 
     /// VIEW FUNCTIONS
