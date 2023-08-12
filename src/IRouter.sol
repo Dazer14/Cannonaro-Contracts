@@ -5,21 +5,21 @@ interface IRouter {
     function addLiquidityCANTO(
         address token,
         bool stable,
-        uint amountTokenDesired,
-        uint amountTokenMin,
-        uint amountCANTOMin,
+        uint256 amountTokenDesired,
+        uint256 amountTokenMin,
+        uint256 amountCANTOMin,
         address to,
-        uint deadline
-    ) external payable returns (uint amountToken, uint amountCANTO, uint liquidity);
+        uint256 deadline
+    ) external payable returns (uint256 amountToken, uint256 amountCANTO, uint256 liquidity);
     function addLiquidity(
         address tokenA,
         address tokenB,
         bool stable,
-        uint amountADesired,
-        uint amountBDesired,
-        uint amountAMin,
-        uint amountBMin,
+        uint256 amountADesired,
+        uint256 amountBDesired,
+        uint256 amountAMin,
+        uint256 amountBMin,
         address to,
-        uint deadline
-    ) external returns (uint amountA, uint amountB, uint liquidity);
+        uint256 deadline
+    ) external returns (uint256 amountA, uint256 amountB, uint256 liquidity);
 }

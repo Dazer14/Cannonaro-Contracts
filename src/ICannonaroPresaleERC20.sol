@@ -2,32 +2,29 @@
 pragma solidity ^0.8.8;
 
 interface ICannonaroPresaleERC20 {
-    enum PairType {
-        CANTO,
-        NOTE
-    }
     struct PresaleConstants {
-        uint presaleRaiseGoalAmount; 
-        uint vestingDuration;
-        uint supplyPercentForPresaleBasisPoints;
-        uint tokenAmountReservedForPresale;
-        uint tokenAmountForInitialLiquidity;
-        uint presaleLaunchTimestamp;
-        PairType pairType;
+        uint256 presaleRaiseGoalAmount;
+        uint256 vestingDuration;
+        uint256 supplyPercentForPresaleBasisPoints;
+        uint256 tokenAmountReservedForPresale;
+        uint256 tokenAmountForInitialLiquidity;
+        uint256 presaleLaunchTimestamp;
     }
+
     struct PresaleMutables {
-        uint totalAmountRaised;
-        uint presaleTokensAllocated;
-        uint totalAmountClaimed;
+        uint256 totalAmountRaised;
+        uint256 presaleTokensAllocated;
+        uint256 totalAmountClaimed;
         bool presaleComplete;
         bool tokenHasLaunched;
-        uint tokenPairLaunchTimestamp;
+        uint256 tokenPairLaunchTimestamp;
     }
+
     struct AllocationData {
-        uint totalAllocation;
-        uint amountClaimed;
-        uint lastClaimTimestamp;
-        uint amountContributed;
+        uint256 totalAllocation;
+        uint256 amountClaimed;
+        uint256 lastClaimTimestamp;
+        uint256 amountContributed;
     }
 
     // Generated getters
@@ -38,12 +35,12 @@ interface ICannonaroPresaleERC20 {
     function presaleParticipant(address user) external returns (AllocationData memory);
 
     // Custom getters
-    function presaleProgress() external view returns (uint progress);
-    function amountClaimable(address user) external view returns (uint amount);
+    function presaleProgress() external view returns (uint256 progress);
+    function amountClaimable(address user) external view returns (uint256 amount);
 
     // Mutable Functions
     function joinPresaleCANTO() external payable;
-    function joinPresaleNOTE(uint contributionAmount) external;
+    function joinPresaleNOTE(uint256 contributionAmount) external;
     function exitPresale() external;
     function launchToken() external;
     function vest() external;
