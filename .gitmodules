@@ -4,3 +4,6 @@
 [submodule "lib/openzeppelin-contracts"]
 	path = lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "lib/CSR-Rewards-ERC20"]
+	path = lib/CSR-Rewards-ERC20
+	url = https://github.com/Dazer14/CSR-Rewards-ERC20
