@@ -13,94 +13,70 @@ import "lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
 import "lib/openzeppelin-contracts/contracts/utils/Address.sol";
 
 import "./ICannonaroFactory.sol";
-import "./ITurnstile.sol";
-import "./IRouter.sol";
 
 /**
  * @title Cannonaro Presale ERC20
  * @notice ERC20 extended with linear vesting presale support
- * @dev This contract is deployed through the Cannonaro Factory
+ * @dev Inherited by Presale pair type
  */
-contract CannonaroPresaleERC20 is ERC20, ReentrancyGuard, ERC20Permit {
-    enum PairType {
-        CANTO,
-        NOTE
+abstract contract CannonaroPresaleERC20 is ERC20, ReentrancyGuard, ERC20Permit {
+    struct PresaleConstants {
+        uint256 presaleRaiseGoalAmount;
+        uint256 vestingDuration;
+        uint256 supplyPercentForPresaleBasisPoints;
+        uint256 tokenAmountReservedForPresale;
+        uint256 tokenAmountForInitialLiquidity;
+        uint256 presaleLaunchTimestamp;
     }
 
-    struct PresaleConstants {
-        uint presaleRaiseGoalAmount; 
-        uint vestingDuration;
-        uint supplyPercentForPresaleBasisPoints;
-        uint tokenAmountReservedForPresale;
-        uint tokenAmountForInitialLiquidity;
-        uint presaleLaunchTimestamp;
-        PairType pairType;
-    }
-    
     struct PresaleMutables {
-        uint totalAmountRaised;
-        uint presaleTokensAllocated;
-        uint totalAmountClaimed;
+        uint256 totalAmountRaised;
+        uint256 presaleTokensAllocated;
+        uint256 totalAmountClaimed;
         bool presaleComplete;
         bool tokenHasLaunched;
-        uint tokenPairLaunchTimestamp;
+        uint256 tokenPairLaunchTimestamp;
     }
 
     struct AllocationData {
-        uint totalAllocation;
-        uint amountClaimed;
-        uint lastClaimTimestamp;
-        uint amountContributed;
+        uint256 totalAllocation;
+        uint256 amountClaimed;
+        uint256 lastClaimTimestamp;
+        uint256 amountContributed;
     }
 
     address public immutable Factory;
     PresaleConstants public presaleConstants;
     PresaleMutables public presaleMutables;
-    mapping (address => AllocationData) public presaleParticipant;
+    mapping(address => AllocationData) public presaleParticipant;
 
-    address public constant NOTE = address(0x4e71A2E537B7f9D9413D3991D37958c0b5e1e503);
-    address public constant Router = address(0xa252eEE9BDe830Ca4793F054B506587027825a8e);
-    address public constant Turnstile = address(0xEcf044C5B4b867CFda001101c617eCd347095B44);
-    address private constant DEAD = address(0x000000000000000000000000000000000000dEaD);
-
-    event PresaleContribution(address contributor, uint amount);
+    event PresaleContribution(address contributor, uint256 amount);
     event PresaleFullyFunded();
-    event PresaleExit(address contributor, uint amountReturned);
-    event TokenLaunch(uint timestamp);
-    event VestingClaim(address contributor, uint claimAmount);
+    event PresaleExit(address contributor, uint256 amountReturned);
+    event TokenLaunch(uint256 timestamp);
+    event VestingClaim(address contributor, uint256 claimAmount);
 
     constructor(
         string memory _name,
         string memory _symbol,
-        uint _supply,
-        uint _presaleRaiseGoalAmount,
-        uint _vestingDuration,
-        uint _supplyPercentForPresaleBasisPoints,
-        address _Factory,
-        PairType _pairType
+        uint256 _supply,
+        uint256 _presaleRaiseGoalAmount,
+        uint256 _vestingDuration,
+        uint256 _supplyPercentForPresaleBasisPoints,
+        address _Factory
     ) ERC20(_name, _symbol) ERC20Permit(_name) {
         require(
-            _supplyPercentForPresaleBasisPoints <= 9900 &&
-            _supplyPercentForPresaleBasisPoints >= 100, 
+            _supplyPercentForPresaleBasisPoints <= 9900 && _supplyPercentForPresaleBasisPoints >= 100,
             "Presale supply must be between 1% and 99%"
         );
 
-        require(
-            _supply > 0 &&
-            _presaleRaiseGoalAmount > 0,
-            "Supply and raise goal must be non zero"
-        );
-
-        require(
-            _pairType == PairType.CANTO || _pairType == PairType.NOTE,
-            "Invalid pair type input"
-        );
+        require(_supply > 0 && _presaleRaiseGoalAmount > 0, "Supply and raise goal must be non zero");
 
         _mint(address(this), _supply);
 
         Factory = _Factory;
 
-        uint tokenAmountReservedForPresale = _supply * _supplyPercentForPresaleBasisPoints / 10000;
+        uint256 tokenAmountReservedForPresale = _supply * _supplyPercentForPresaleBasisPoints / 10000;
 
         presaleConstants = PresaleConstants(
             _presaleRaiseGoalAmount,
@@ -108,70 +84,63 @@ contract CannonaroPresaleERC20 is ERC20, ReentrancyGuard, ERC20Permit {
             _supplyPercentForPresaleBasisPoints,
             tokenAmountReservedForPresale,
             _supply - tokenAmountReservedForPresale,
-            block.timestamp,
-            _pairType
+            block.timestamp
         );
-
-        ITurnstile(Turnstile).assign(ICannonaroFactory(Factory).csrID());
     }
 
-    function _isCantoPair() internal view returns (bool) {
-        return presaleConstants.pairType == PairType.CANTO;
-    }
-
-    function _isNotePair() internal view returns (bool) {
-        return presaleConstants.pairType == PairType.NOTE;
-    }
-
-    /// View Functions
+    /// VIEW FUNCTIONS
 
     /// @notice Percent progress of presale raise
     /// @return progress Percent progress returned as integer
-    function presaleProgress() external view returns (uint progress) {
+    function presaleProgress() external view returns (uint256 progress) {
         progress = presaleMutables.totalAmountRaised * 100 / presaleConstants.presaleRaiseGoalAmount;
     }
 
     /// @notice Presale Contributors can view claimable amount
     /// @return amount Token amount claimable
-    function amountClaimable(address user) public view returns (uint amount) {
+    function amountClaimable(address user) public view returns (uint256 amount) {
         if (!presaleMutables.tokenHasLaunched) return 0;
         AllocationData memory ad = presaleParticipant[user];
-        if (block.timestamp < (presaleMutables.tokenPairLaunchTimestamp + presaleConstants.vestingDuration)) { // vesting
-            uint claimStartTimestamp = ad.lastClaimTimestamp == 0 ? presaleMutables.tokenPairLaunchTimestamp : ad.lastClaimTimestamp;
+        if (block.timestamp < (presaleMutables.tokenPairLaunchTimestamp + presaleConstants.vestingDuration)) {
+            // vesting
+            uint256 claimStartTimestamp =
+                ad.lastClaimTimestamp == 0 ? presaleMutables.tokenPairLaunchTimestamp : ad.lastClaimTimestamp;
             amount = ad.totalAllocation * (block.timestamp - claimStartTimestamp) / presaleConstants.vestingDuration;
-        } else { // vesting period finished, return remainder of unclaimed tokens
+        } else {
+            // vesting period finished, return remainder of unclaimed tokens
             amount = ad.totalAllocation - ad.amountClaimed;
         }
     }
 
-    /// Mutable Functions
+    /// MUTABLE FUNCTIONS
 
     function _updateStatusInFactory(ICannonaroFactory.PresaleStatus status) internal {
         ICannonaroFactory(Factory).updateTokenPresaleStatus(status);
     }
 
-    function _joinPresale(uint contributionAmount) internal returns (uint excessContribution) {
+    function _joinPresale(uint256 contributionAmount) internal returns (uint256 excessContribution) {
         require(!presaleMutables.presaleComplete, "Presale has completed");
         require(contributionAmount > 0, "Must make non zero contribution");
 
         ICannonaroFactory(Factory).userJoiningPresale(msg.sender);
 
         // contributing within raise goal bounds
-        if (presaleMutables.totalAmountRaised + contributionAmount < presaleConstants.presaleRaiseGoalAmount) { 
-            uint tokenAllocationAmountForContribution = 
-                presaleConstants.tokenAmountReservedForPresale * contributionAmount / presaleConstants.presaleRaiseGoalAmount;
-            
+        if (presaleMutables.totalAmountRaised + contributionAmount < presaleConstants.presaleRaiseGoalAmount) {
+            uint256 tokenAllocationAmountForContribution = presaleConstants.tokenAmountReservedForPresale
+                * contributionAmount / presaleConstants.presaleRaiseGoalAmount;
+
             presaleParticipant[msg.sender].totalAllocation += tokenAllocationAmountForContribution;
             presaleParticipant[msg.sender].amountContributed += contributionAmount;
             presaleMutables.presaleTokensAllocated += tokenAllocationAmountForContribution;
             presaleMutables.totalAmountRaised += contributionAmount;
 
             emit PresaleContribution(msg.sender, contributionAmount);
-
-        } else { // contribution is remainder of raise goal or excess contribution
-            uint presaleAllocationRemainder = presaleConstants.tokenAmountReservedForPresale - presaleMutables.presaleTokensAllocated;
+        } else {
+            // contribution is remainder of raise goal or excess contribution
+            uint256 presaleAllocationRemainder =
+                presaleConstants.tokenAmountReservedForPresale - presaleMutables.presaleTokensAllocated;
             presaleParticipant[msg.sender].totalAllocation += presaleAllocationRemainder;
-            uint remainingRaiseMargin = presaleConstants.presaleRaiseGoalAmount - presaleMutables.totalAmountRaised;
+            uint256 remainingRaiseMargin = presaleConstants.presaleRaiseGoalAmount - presaleMutables.totalAmountRaised;
             excessContribution = contributionAmount - remainingRaiseMargin;
             presaleParticipant[msg.sender].amountContributed += remainingRaiseMargin;
             presaleMutables.presaleTokensAllocated = presaleConstants.tokenAmountReservedForPresale;
@@ -185,32 +154,9 @@ contract CannonaroPresaleERC20 is ERC20, ReentrancyGuard, ERC20Permit {
         }
     }
 
-    /// @notice Payable contribution function for CANTO based presales
-    function joinPresaleCANTO() external payable nonReentrant {
-        require(_isCantoPair(), "Must be a CANTO pair to call");
+    function joinPresale(uint256 amount) external payable virtual;
 
-        uint contributionAmount = msg.value;
-
-        uint excessContribution = _joinPresale(contributionAmount);
-
-        if (excessContribution > 0) {
-            Address.sendValue(payable(msg.sender), excessContribution);
-        }
-    }
-
-    /// @notice Contribution function for NOTE based presales, must approve before
-    /// @param contributionAmount NOTE amount to contribute
-    function joinPresaleNOTE(uint contributionAmount) external nonReentrant {
-        require(_isNotePair(), "Must be a NOTE pair to call");
-
-        IERC20(NOTE).transferFrom(msg.sender, address(this), contributionAmount);
-
-        uint excessContribution = _joinPresale(contributionAmount);
-
-        if (excessContribution > 0) {
-            IERC20(NOTE).transfer(msg.sender, excessContribution);
-        }
-    }
+    function _returnPresaleContribution(address account, uint256 amount) internal virtual;
 
     /// @notice Presale contributors can exit prior to raise completion and retrieve all contributions
     function exitPresale() external nonReentrant {
@@ -219,20 +165,16 @@ contract CannonaroPresaleERC20 is ERC20, ReentrancyGuard, ERC20Permit {
         require(ad.amountContributed > 0, "You have not made any contribution yet");
         presaleMutables.totalAmountRaised -= ad.amountContributed;
         presaleMutables.presaleTokensAllocated -= ad.totalAllocation;
-        presaleParticipant[msg.sender] = AllocationData(0,0,0,0);
+        presaleParticipant[msg.sender] = AllocationData(0, 0, 0, 0);
 
-        if (_isCantoPair()) {
-            Address.sendValue(payable(msg.sender), ad.amountContributed);
-        } 
-        
-        if (_isNotePair()) {
-            IERC20(NOTE).transfer(msg.sender, ad.amountContributed);
-        }
+        _returnPresaleContribution(msg.sender, ad.amountContributed);
 
         ICannonaroFactory(Factory).userExitingPresale(msg.sender);
 
         emit PresaleExit(msg.sender, ad.amountContributed);
     }
+
+    function _supplyLiquidity(uint256 totalAmountRaised, uint256 tokenAmountForInitialLiquidity) internal virtual;
 
     /// @notice Launch token pair liquidity when presale raise goal is met
     function launchToken() external nonReentrant {
@@ -240,34 +182,7 @@ contract CannonaroPresaleERC20 is ERC20, ReentrancyGuard, ERC20Permit {
         require(!presaleMutables.tokenHasLaunched, "Token has already launched");
         presaleMutables.tokenPairLaunchTimestamp = block.timestamp;
 
-        _approve(address(this), Router, presaleConstants.tokenAmountForInitialLiquidity);
-
-        if (_isCantoPair()) {
-            IRouter(Router).addLiquidityCANTO{value: presaleMutables.totalAmountRaised}(
-                address(this), 
-                false,
-                presaleConstants.tokenAmountForInitialLiquidity, 
-                0, 
-                0, 
-                DEAD, 
-                block.timestamp
-            );
-        }
-
-        if (_isNotePair()) {
-            IERC20(NOTE).approve(Router, presaleMutables.totalAmountRaised);
-            IRouter(Router).addLiquidity(
-                NOTE,
-                address(this),
-                false,
-                presaleMutables.totalAmountRaised,
-                presaleConstants.tokenAmountForInitialLiquidity,
-                0,
-                0,
-                DEAD,
-                block.timestamp
-            );
-        }
+        _supplyLiquidity(presaleMutables.totalAmountRaised, presaleConstants.tokenAmountForInitialLiquidity);
 
         presaleMutables.tokenHasLaunched = true;
         _updateStatusInFactory(ICannonaroFactory.PresaleStatus.VESTING);
@@ -275,10 +190,10 @@ contract CannonaroPresaleERC20 is ERC20, ReentrancyGuard, ERC20Permit {
         emit TokenLaunch(block.timestamp);
     }
 
-    /// @notice Presale contributors can vest claimable tokens 
+    /// @notice Presale contributors can vest claimable tokens
     function vest() external nonReentrant {
         require(presaleMutables.tokenHasLaunched, "Token has not launched, no vesting");
-        uint claimableAmount = amountClaimable(msg.sender);
+        uint256 claimableAmount = amountClaimable(msg.sender);
         require(claimableAmount > 0, "No tokens to vest");
         presaleParticipant[msg.sender].amountClaimed += claimableAmount;
         presaleParticipant[msg.sender].lastClaimTimestamp = block.timestamp;
