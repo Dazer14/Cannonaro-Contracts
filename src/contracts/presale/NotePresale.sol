@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./CannonaroPresaleERC20.sol";
-import "./IRouter.sol";
+import "../../interfaces/IRouter.sol";
 
 contract NotePresale is CannonaroPresaleERC20 {
     address private constant ROUTER = address(0xa252eEE9BDe830Ca4793F054B506587027825a8e);

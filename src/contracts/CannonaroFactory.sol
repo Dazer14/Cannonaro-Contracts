@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./CantoPresale.sol";
-import "./ITurnstile.sol";
+import "../interfaces/ITurnstile.sol";
 
 /**
  * @title Cannonaro Factory

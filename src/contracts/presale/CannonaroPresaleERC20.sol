@@ -13,7 +13,7 @@ import "openzeppelin/security/ReentrancyGuard.sol";
 import "openzeppelin/utils/Address.sol";
 import "lib/CSR-Rewards-ERC20/src/contracts/CsrRewardsERC20.sol";
 
-import "./ICannonaroFactory.sol";
+import "../../interfaces/ICannonaroFactory.sol";
 
 /**
  * @title Cannonaro Presale ERC20
