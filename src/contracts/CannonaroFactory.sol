@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./CantoPresale.sol";
+import "./presale/CantoPresale.sol";
 import "../interfaces/ITurnstile.sol";
 
 /**
