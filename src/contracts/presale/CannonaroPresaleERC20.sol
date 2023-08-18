@@ -1,16 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.8;
 
-// import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "openzeppelin/token/ERC20/ERC20.sol";
-// import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "openzeppelin/token/ERC20/IERC20.sol";
-// import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
-import "openzeppelin/token/ERC20/extensions/draft-ERC20Permit.sol";
-// import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "openzeppelin/security/ReentrancyGuard.sol";
-// import "@openzeppelin/contracts/utils/Address.sol";
-import "openzeppelin/utils/Address.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 import "lib/CSR-Rewards-ERC20/src/contracts/CsrRewardsERC20.sol";
 
 import "../../interfaces/ICannonaroFactory.sol";

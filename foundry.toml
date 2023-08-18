@@ -4,6 +4,6 @@ src = "src"
 out = "out"
 libs = ["lib"]
 remappings = [
-    "openzeppelin/=lib/openzeppelin-contracts/contracts/",
+    "@openzeppelin/=lib/openzeppelin-contracts/",
     "csr-rewards/=lib/CSR-Rewards-ERC20/src/contracts/"
 ]
