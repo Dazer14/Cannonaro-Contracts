@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./CannonaroPresaleERC20.sol";
-import "../../interfaces/IRouter.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {CannonaroPresaleERC20} from "./CannonaroPresaleERC20.sol";
+import {IRouter} from "../../interfaces/IRouter.sol";
 
 contract CantoPresale is CannonaroPresaleERC20 {
-    address private constant ROUTER = address(0xa252eEE9BDe830Ca4793F054B506587027825a8e);
-    address private constant DEAD = address(0x000000000000000000000000000000000000dEaD);
+    address public constant ROUTER = address(0xa252eEE9BDe830Ca4793F054B506587027825a8e);
+    address public constant DEAD = address(0x000000000000000000000000000000000000dEaD);
 
     constructor(
         string memory _name,
@@ -15,7 +16,7 @@ contract CantoPresale is CannonaroPresaleERC20 {
         uint256 _presaleRaiseGoalAmount,
         uint256 _vestingDuration,
         uint256 _supplyPercentForPresaleBasisPoints,
-        address _Factory,
+        address _factory,
         bool _usingWithdrawCallFee,
         uint16 _withdrawCallFeeBasisPoints
     )
@@ -26,7 +27,7 @@ contract CantoPresale is CannonaroPresaleERC20 {
             _presaleRaiseGoalAmount,
             _vestingDuration,
             _supplyPercentForPresaleBasisPoints,
-            _Factory,
+            _factory,
             _usingWithdrawCallFee,
             _withdrawCallFeeBasisPoints
         )

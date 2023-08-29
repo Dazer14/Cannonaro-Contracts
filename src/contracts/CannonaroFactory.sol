@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./presale/CantoPresale.sol";
-import "../interfaces/ITurnstile.sol";
+import {CantoPresale} from "./presale/CantoPresale.sol";
+import {ITurnstile} from "../interfaces/ITurnstile.sol";
 
 /**
  * @title Cannonaro Factory

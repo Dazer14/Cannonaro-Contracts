@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./CannonaroPresaleERC20.sol";
-import "../../interfaces/IRouter.sol";
+import {CannonaroPresaleERC20} from "./CannonaroPresaleERC20.sol";
+import {IRouter} from "../../interfaces/IRouter.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract NotePresale is CannonaroPresaleERC20 {
-    address private constant ROUTER = address(0xa252eEE9BDe830Ca4793F054B506587027825a8e);
-    address private constant DEAD = address(0x000000000000000000000000000000000000dEaD);
+    address public constant ROUTER = address(0xa252eEE9BDe830Ca4793F054B506587027825a8e);
+    address public constant DEAD = address(0x000000000000000000000000000000000000dEaD);
     address public constant NOTE = address(0x4e71A2E537B7f9D9413D3991D37958c0b5e1e503);
 
     constructor(
