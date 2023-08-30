@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {CannonaroPresaleERC20} from "./CannonaroPresaleERC20.sol";
+import {IERC20} from "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {IRouter} from "../../interfaces/IRouter.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {CannonaroPresaleERC20} from "./CannonaroPresaleERC20.sol";
 
 contract NotePresale is CannonaroPresaleERC20 {
     address public constant ROUTER = address(0xa252eEE9BDe830Ca4793F054B506587027825a8e);
@@ -17,7 +17,7 @@ contract NotePresale is CannonaroPresaleERC20 {
         uint256 _presaleRaiseGoalAmount,
         uint256 _vestingDuration,
         uint256 _supplyPercentForPresaleBasisPoints,
-        address _Factory,
+        address _factory,
         bool _usingWithdrawCallFee,
         uint16 _withdrawCallFeeBasisPoints
     )
@@ -28,7 +28,7 @@ contract NotePresale is CannonaroPresaleERC20 {
             _presaleRaiseGoalAmount,
             _vestingDuration,
             _supplyPercentForPresaleBasisPoints,
-            _Factory,
+            _factory,
             _usingWithdrawCallFee,
             _withdrawCallFeeBasisPoints
         )

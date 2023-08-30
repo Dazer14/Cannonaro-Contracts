@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {Address} from "@openzeppelin/contracts/utils/Address.sol";
-import {CannonaroPresaleERC20} from "./CannonaroPresaleERC20.sol";
+import {Address} from "lib/openzeppelin-contracts/contracts/utils/Address.sol";
 import {IRouter} from "../../interfaces/IRouter.sol";
+import {CannonaroPresaleERC20} from "./CannonaroPresaleERC20.sol";
 
 contract CantoPresale is CannonaroPresaleERC20 {
     address public constant ROUTER = address(0xa252eEE9BDe830Ca4793F054B506587027825a8e);

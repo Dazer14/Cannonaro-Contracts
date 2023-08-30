@@ -1,19 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.8;
 
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {CsrRewardsERC20} from "lib/CSR-Rewards-ERC20/src/contracts/CsrRewardsERC20.sol";
+import {IERC20} from "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {ICannonaroFactory} from "../../interfaces/ICannonaroFactory.sol";
+import {CsrRewardsERC20, ERC20, ReentrancyGuard} from "lib/CSR-Rewards-ERC20/src/contracts/CsrRewardsERC20.sol";
 
 /**
  * @title Cannonaro Presale ERC20
  * @notice ERC20 extended with linear vesting presale support
  * @dev Inherited by Presale pair type
  */
-abstract contract CannonaroPresaleERC20 is ERC20, ReentrancyGuard, ERC20Permit, CsrRewardsERC20 {
+abstract contract CannonaroPresaleERC20 is ERC20, ReentrancyGuard, CsrRewardsERC20 {
     struct PresaleConstants {
         uint256 presaleRaiseGoalAmount;
         uint256 vestingDuration;
@@ -39,7 +36,7 @@ abstract contract CannonaroPresaleERC20 is ERC20, ReentrancyGuard, ERC20Permit, 
         uint256 amountContributed;
     }
 
-    address public immutable Factory;
+    address public immutable factory;
     PresaleConstants public presaleConstants;
     PresaleMutables public presaleMutables;
     mapping(address => AllocationData) public presaleParticipant;
@@ -57,10 +54,10 @@ abstract contract CannonaroPresaleERC20 is ERC20, ReentrancyGuard, ERC20Permit, 
         uint256 _presaleRaiseGoalAmount,
         uint256 _vestingDuration,
         uint256 _supplyPercentForPresaleBasisPoints,
-        address _Factory,
+        address _factory,
         bool _usingWithdrawCallFee,
         uint16 _withdrawCallFeeBasisPoints
-    ) ERC20(_name, _symbol) ERC20Permit(_name) CsrRewardsERC20(_usingWithdrawCallFee, _withdrawCallFeeBasisPoints) {
+    ) ERC20(_name, _symbol) CsrRewardsERC20(_usingWithdrawCallFee, _withdrawCallFeeBasisPoints) {
         require(
             _supplyPercentForPresaleBasisPoints <= 9900 && _supplyPercentForPresaleBasisPoints >= 100,
             "Presale supply must be between 1% and 99%"
@@ -70,7 +67,7 @@ abstract contract CannonaroPresaleERC20 is ERC20, ReentrancyGuard, ERC20Permit, 
 
         _mint(address(this), _supply);
 
-        Factory = _Factory;
+        factory = _factory;
 
         uint256 tokenAmountReservedForPresale = _supply * _supplyPercentForPresaleBasisPoints / 10000;
 
@@ -115,14 +112,14 @@ abstract contract CannonaroPresaleERC20 is ERC20, ReentrancyGuard, ERC20Permit, 
     /// MUTABLE FUNCTIONS
 
     function _updateStatusInFactory(ICannonaroFactory.PresaleStatus status) internal {
-        ICannonaroFactory(Factory).updateTokenPresaleStatus(status);
+        ICannonaroFactory(factory).updateTokenPresaleStatus(status);
     }
 
     function _joinPresale(uint256 contributionAmount) internal returns (uint256 excessContribution) {
         require(!presaleMutables.presaleComplete, "Presale has completed");
         require(contributionAmount > 0, "Must make non zero contribution");
 
-        ICannonaroFactory(Factory).userJoiningPresale(msg.sender);
+        ICannonaroFactory(factory).userJoiningPresale(msg.sender);
 
         // contributing within raise goal bounds
         if (presaleMutables.totalAmountRaised + contributionAmount < presaleConstants.presaleRaiseGoalAmount) {
@@ -169,7 +166,7 @@ abstract contract CannonaroPresaleERC20 is ERC20, ReentrancyGuard, ERC20Permit, 
 
         _returnPresaleContribution(msg.sender, ad.amountContributed);
 
-        ICannonaroFactory(Factory).userExitingPresale(msg.sender);
+        ICannonaroFactory(factory).userExitingPresale(msg.sender);
 
         emit PresaleExit(msg.sender, ad.amountContributed);
     }
